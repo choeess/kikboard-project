@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수거 기사 전용 관제 시스템</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center">
+
+    <div id="loginSection" class="w-full max-w-md mx-auto bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl block">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-black text-indigo-400">🚚 기사 시스템 로그인</h1>
+            <p class="text-xs text-slate-400 mt-1">소속 브랜드를 선택하세요.</p>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1">소속사 선택</label>
+                <select id="driverBrand" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-slate-200">
+                    <option value="지쿠(GCOO)">지쿠(GCOO)</option>
+                    <option value="씽씽">씽씽</option>
+                    <option value="빔(BEAM)">빔(BEAM)</option>
+                    <option value="스윙(SWING)">스윙(SWING)</option>
+                    <option value="다트(DART)">다트(DART)</option>
+                </select>
+            </div>
+            <button onclick="loginDriver()" class="w-full bg-indigo-600 hover:bg-indigo-700 p-3.5 rounded-xl font-bold transition-all text-sm cursor-pointer">
+                관제 시스템 접속
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboardSection" class="w-full min-h-screen grid grid-cols-1 md:grid-cols-4 hidden">
+        
+        <div class="md:col-span-1 bg-slate-900 border-r border-slate-800 p-6 flex flex-col justify-between">
+            <div class="space-y-6">
+                <div class="border-b border-slate-800 pb-4">
+                    <h2 class="text-lg font-black text-slate-200 flex items-center gap-2">📊 캠퍼스 관제 동향</h2>
+                    <p class="text-[11px] text-slate-500 mt-0.5">대덕면 내리 대학가 밀집도 분석 리스트</p>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex justify-between items-center">
+                        <span class="text-xs font-bold text-rose-400">🔴 내리 대학가 원룸촌</span>
+                        <span class="text-xs bg-rose-500 text-white px-2 py-0.5 rounded font-black font-mono">🛠️ 위험도 최상</span>
+                    </div>
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex justify-between items-center">
+                        <span class="text-xs font-bold text-amber-400">🟡 중앙대 정문 광장</span>
+                        <span class="text-xs bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-black font-mono">⚠️ 주시 등급</span>
+                    </div>
+                    <div class="p-3 bg-slate-800 border border-slate-700 rounded-xl flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">⚪ 대덕면 행정센터</span>
+                        <span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-bold font-mono">안전</span>
+                    </div>
+                    <div class="p-3 bg-slate-800 border border-slate-700 rounded-xl flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">⚪ 신령리 / 건지리</span>
+                        <span class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded font-bold font-mono">안전</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 text-center">
+                <p class="text-[10px] text-slate-600 font-mono tracking-widest">CAU DAVINCI CAMPUS TRAFFIC CONTROL</p>
+            </div>
+        </div>
+
+        <div class="md:col-span-3 p-6 space-y-6 flex flex-col justify-between bg-slate-950">
+            <div class="space-y-6">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-100">
+                            🛰️ <span id="displayBrandName" class="text-indigo-400"></span> 관제 본부 (안성)
+                        </h1>
+                        <p class="text-xs text-slate-400 mt-1">중앙대 다빈치캠 전용 규제 정렬 알고리즘 구동 중</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadTasks()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-bold text-xs cursor-pointer">🔄 동기화</button>
+                        <button onclick="logoutDriver()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-bold text-xs cursor-pointer">로그아웃</button>
+                    </div>
+                </div>
+
+                <div id="taskContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentLoggedBrand = "";
+
+        function loginDriver() {
+            currentLoggedBrand = document.getElementById('driverBrand').value;
+            document.body.className = "bg-slate-950 min-h-screen text-slate-100 flex items-start justify-start";
+            document.getElementById('loginSection').className = "hidden";
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('displayBrandName').innerText = currentLoggedBrand;
+            loadTasks();
+            window.taskInterval = setInterval(loadTasks, 5000);
+        }
+
+        function logoutDriver() {
+            clearInterval(window.taskInterval);
+            document.body.className = "bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center";
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('loginSection').className = "w-full max-w-md mx-auto bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl block";
+        }
+
+        async function loadTasks() {
+            const container = document.getElementById('taskContainer');
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/driver/tasks?brand=${encodeURIComponent(currentLoggedBrand)}`);
+                const data = await response.json();
+                
+                if (!data.tasks || data.tasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-20 bg-slate-800/20 rounded-2xl border border-dashed border-slate-800">
+                            <p class="text-xl">🎉 캠퍼스 구역 깨끗함</p>
+                            <p class="text-xs text-slate-500 mt-1">대기 중인 자사 킥보드 민원이 없습니다.</p>
+                        </div>`;
+                    return;
+                }
+                
+                container.innerHTML = '';
+                data.tasks.forEach(task => {
+                    let badgeColor = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+                    if(task.danger_score >= 6) badgeColor = "bg-rose-500/20 text-rose-400 border-rose-500/30";
+                    
+                    const kakaoNaviUrl = `https://map.kakao.com/link/to/${task.scooter_id},${task.lat},${task.lng}`;
+                    
+                    const card = `
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between border-l-4 border-l-indigo-500">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] px-2 py-0.5 rounded font-black border ${badgeColor}">
+                                        합산 {${task.danger_score}점}
+                                    </span>
+                                    <span class="text-[10px] text-slate-600 font-mono">${task.time}</span>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-200">${task.scooter_id} <span class="text-xs text-slate-400 font-normal">(${task.region})</span></h3>
+                                    <p class="text-xs text-rose-400 font-semibold mt-1">🚨 현장: ${task.obstruction_type}</p>
+                                </div>
+                                
+                                <div class="bg-slate-950 p-2.5 rounded-lg text-[11px] space-y-0.5 font-mono text-slate-500">
+                                    <p>📍 위치 유형: ${task.location_type}</p>
+                                    <p>🌐 중앙대 내장 GPS: ${task.lat}, ${task.lng}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2 mt-4">
+                                <a href="${kakaoNaviUrl}" target="_blank" class="bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-600 hover:text-white font-bold py-2.5 rounded-lg text-center text-[11px] transition-all flex items-center justify-center gap-1">
+                                    🗺️ 경로 안내
+                                </a>
+                                <button onclick="this.closest('.bg-slate-900').remove()" class="bg-slate-800 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-[11px] transition-all cursor-pointer">
+                                    수거 완료
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } catch (error) { console.error(error); }
+        }
+    </script>
+</body>
+</html>

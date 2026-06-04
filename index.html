@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 킥보드 통합 민원 센터</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="bg-gradient-to-tr from-slate-100 to-indigo-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-xl border border-slate-200 space-y-5">
+        
+        <div class="text-center">
+            <h1 class="text-2xl font-black text-indigo-900">🚦 킥보드 불법주차 신고</h1>
+            <p id="subTitleText" class="text-xs font-semibold text-indigo-600 mt-1 bg-indigo-50 py-1 rounded-lg transition-all duration-300">
+                📷 기기의 QR코드를 카메라 프레임에 비춰주세요.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <button type="button" onclick="switchMode('qr')" id="btnQr" class="p-3 rounded-xl font-bold border-2 border-indigo-600 bg-indigo-50 text-indigo-600 text-sm cursor-pointer transition-all">📷 QR코드 스캔</button>
+            <button type="button" onclick="switchMode('manual')" id="btnManual" class="p-3 rounded-xl font-bold border-2 border-slate-200 text-slate-600 text-sm cursor-pointer transition-all">⌨️ ID 직접 입력</button>
+        </div>
+
+        <form class="space-y-4">
+            <div id="qrContainer" class="block space-y-2">
+                <div id="reader" class="w-full overflow-hidden rounded-xl border border-slate-300 bg-slate-50"></div>
+            </div>
+
+            <div id="manualContainer" class="hidden">
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">킥보드 고유 ID</label>
+                <input type="text" id="scooterId" placeholder="예: GCOO-101, XING-201" class="w-full p-3 border border-slate-300 rounded-xl font-mono uppercase text-lg focus:outline-indigo-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">방치 지역 위치</label>
+                <select id="locationType" class="w-full p-3 border border-slate-300 rounded-xl bg-white text-sm focus:outline-indigo-500">
+                    <option value="일반 보행로(인도)">일반 보행로(인도)</option>
+                    <option value="점자블록 위">점자블록 위</option>
+                    <option value="횡단보도">횡단보도</option>
+                    <option value="버스정류장 앞">버스정류장 앞</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">⚠️ 구체적인 방해 형태</label>
+                <select id="obstructionType" class="w-full p-3 border border-slate-300 rounded-xl bg-white text-sm focus:outline-indigo-500 text-amber-600 font-semibold">
+                    <option value="해당 없음 (단순 주차)">해당 없음 (단순 주차)</option>
+                    <option value="통행을 완전히 막음 (길막)">통행을 완전히 막음 (길막)</option>
+                    <option value="상가/건물 출입구를 막음">상가/건물 출입구를 막음</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">📸 불법 주정차 현장 사진 첨부 (AI 검증 필수)</label>
+                <div class="relative border-2 border-dashed border-slate-300 rounded-xl p-4 bg-slate-50 text-center hover:bg-slate-100/50 transition-all">
+                    <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div id="uploadPlaceholder" class="space-y-1">
+                        <p class="text-sm font-medium text-slate-700">스마트폰 사진첩에서 선택</p>
+                        <p class="text-[11px] text-slate-400">사진 등록 시 컴퓨터 비전 알고리즘 자동 추적</p>
+                    </div>
+                    <img id="imagePreview" class="hidden max-h-32 mx-auto rounded-lg shadow-sm border">
+                </div>
+            </div>
+
+            <button type="button" onclick="submitReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl font-bold transition-all shadow-md text-sm cursor-pointer">
+                신고 접수 및 해당 소속사 기사 배정
+            </button>
+        </form>
+
+        <div id="resultBox" class="mt-4 p-4 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs hidden whitespace-pre-line leading-relaxed"></div>
+
+        <div id="timelineBox" class="border-t border-slate-100 pt-4 hidden space-y-3">
+            <p class="text-xs font-bold text-slate-700 flex items-center gap-1.5">📡 실시간 민원 처리 추적</p>
+            <div class="flex justify-between items-center text-[11px] relative pt-2">
+                <div class="absolute top-5 left-0 right-0 h-0.5 bg-slate-200 z-0"></div>
+                <div id="timelineProgress" class="absolute top-5 left-0 h-0.5 bg-indigo-500 z-0 transition-all duration-500" style="width: 0%;"></div>
+                <div class="flex flex-col items-center z-10 w-1/3">
+                    <div id="step1Dot" class="w-6 h-6 rounded-full bg-slate-200 text-white flex items-center justify-center font-bold mb-1">1</div>
+                    <span id="step1Text" class="text-slate-400 font-medium">민원 접수</span>
+                </div>
+                <div class="flex flex-col items-center z-10 w-1/3">
+                    <div id="step2Dot" class="w-6 h-6 rounded-full bg-slate-200 text-white flex items-center justify-center font-bold mb-1">2</div>
+                    <span id="step2Text" class="text-slate-400 font-medium">과태료 부과</span>
+                </div>
+                <div class="flex flex-col items-center z-10 w-1/3">
+                    <div id="step3Dot" class="w-6 h-6 rounded-full bg-slate-200 text-white flex items-center justify-center font-bold mb-1">3</div>
+                    <span id="step3Text" class="text-slate-400 font-medium">기사 출동중</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let html5QrcodeScanner = null;
+        let isImageAttached = false;
+
+        // ────── 버튼 누를 때 폼 전환 및 안내 글귀 교체 자바스크립트 ──────
+        function switchMode(mode) {
+            const qrContainer = document.getElementById('qrContainer');
+            const manualContainer = document.getElementById('manualContainer');
+            const btnQr = document.getElementById('btnQr');
+            const btnManual = document.getElementById('btnManual');
+            const subTitleText = document.getElementById('subTitleText'); // 안내 글귀 엘리먼트 추출
+
+            if (mode === 'qr') {
+                qrContainer.classList.replace('hidden', 'block');
+                manualContainer.classList.replace('block', 'hidden');
+                btnQr.className = "p-3 rounded-xl font-bold border-2 border-indigo-600 bg-indigo-50 text-indigo-600 text-sm cursor-pointer transition-all";
+                btnManual.className = "p-3 rounded-xl font-bold border-2 border-slate-200 text-slate-600 text-sm cursor-pointer transition-all";
+                
+                // 텍스트 동적 변경 및 UI 색상 강조
+                subTitleText.innerText = "📷 기기의 QR코드를 카메라 프레임에 비춰주세요.";
+                subTitleText.className = "text-xs font-semibold text-indigo-600 mt-1 bg-indigo-50 py-1 rounded-lg transition-all duration-300";
+                
+                startQrScanner();
+            } else {
+                qrContainer.classList.replace('block', 'hidden');
+                manualContainer.classList.replace('hidden', 'block');
+                btnManual.className = "p-3 rounded-xl font-bold border-2 border-indigo-600 bg-indigo-50 text-indigo-600 text-sm cursor-pointer transition-all";
+                btnQr.className = "p-3 rounded-xl font-bold border-2 border-slate-200 text-slate-600 text-sm cursor-pointer transition-all";
+                
+                // 텍스트 동적 변경 및 UI 색상 변경
+                subTitleText.innerText = "⌨️ 기기 몸체에 표기된 고유 ID 숫자를 직접 입력해 주세요.";
+                subTitleText.className = "text-xs font-semibold text-amber-600 mt-1 bg-amber-50 py-1 rounded-lg transition-all duration-300";
+                
+                if(html5QrcodeScanner) { html5QrcodeScanner.clear().catch(err => {}); }
+            }
+        }
+
+        function startQrScanner() {
+            if (html5QrcodeScanner && html5QrcodeScanner.getState() === 2) return;
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+            html5QrcodeScanner.render((decodedText) => {
+                alert(`[QR 스캔] ID: ${decodedText}`);
+                document.getElementById('scooterId').value = decodedText.toUpperCase().trim();
+                switchMode('manual');
+            });
+        }
+
+        window.onload = function() { startQrScanner(); };
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const preview = document.getElementById('imagePreview');
+                const placeholder = document.getElementById('uploadPlaceholder');
+                preview.src = reader.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                isImageAttached = true;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function updateTimeline(step) {
+            document.getElementById('timelineBox').classList.remove('hidden');
+            const dot1 = document.getElementById('step1Dot'); const dot2 = document.getElementById('step2Dot'); const dot3 = document.getElementById('step3Dot');
+            const t1 = document.getElementById('step1Text'); const t2 = document.getElementById('step2Text'); const t3 = document.getElementById('step3Text');
+            const bar = document.getElementById('timelineProgress');
+
+            [dot1, dot2, dot3].forEach(d => d.className = "w-6 h-6 rounded-full bg-slate-200 text-white flex items-center justify-center font-bold mb-1 transition-all");
+            [t1, t2, t3].forEach(t => t.className = "text-slate-400 font-medium");
+
+            if (step >= 1) { dot1.classList.replace('bg-slate-200', 'bg-emerald-500'); t1.className = "text-emerald-600 font-bold"; bar.style.width = "0%"; }
+            if (step >= 2) { dot2.classList.replace('bg-slate-200', 'bg-indigo-500'); t2.className = "text-indigo-600 font-bold"; bar.style.width = "50%"; }
+            if (step >= 3) { dot3.classList.replace('bg-slate-200', 'bg-amber-500'); t3.className = "text-amber-600 font-bold"; bar.style.width = "100%"; }
+        }
+
+        async function submitReport() {
+            const scooterId = document.getElementById('scooterId').value;
+            const locationType = document.getElementById('locationType').value;
+            const obstructionType = document.getElementById('obstructionType').value;
+            const resultBox = document.getElementById('resultBox');
+
+            if(!scooterId) { alert("고유 ID를 입력해 주세요."); return; }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        scooter_id: scooterId, 
+                        location_type: locationType,
+                        obstruction_type: obstructionType,
+                        has_image: isImageAttached
+                    })
+                });
+                const data = await response.json();
+                resultBox.classList.remove('hidden');
+                resultBox.innerHTML = `[SYSTEM LOG]\n\n${data.message}`;
+                
+                updateTimeline(data.status_step);
+                setTimeout(() => { updateTimeline(3); }, 2500);
+
+            } catch (error) { alert("백엔드 서버 가동을 확인하세요!"); }
+        }
+    </script>
+</body>
+</html>
