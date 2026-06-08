@@ -6,9 +6,9 @@
     <title>수거 기사 전용 관제 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center font-sans selection:bg-indigo-500/30">
+<body class="bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center font-sans selection:bg-indigo-500/30 overflow-x-hidden">
 
-    <div id="loginSection" class="w-full max-w-sm mx-auto bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl block m-4">
+    <div id="loginSection" class="w-full max-w-sm mx-auto bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl block m-4 z-50">
         <div class="text-center mb-6">
             <h1 class="text-xl font-black text-indigo-400 flex items-center justify-center gap-2">🚚 수거 기사 시스템</h1>
             <p class="text-[11px] text-slate-400 mt-1">소속 구역 수거 관제를 위해 브랜드를 선택하세요.</p>
@@ -30,15 +30,14 @@
         </div>
     </div>
 
-    <div id="dashboardSection" class="w-full min-h-screen grid grid-cols-1 md:grid-cols-4 hidden">
+    <div id="dashboardSection" class="w-full h-screen grid grid-cols-1 md:grid-cols-4 hidden overflow-hidden">
         
-        <div id="sidebarArea" class="hidden md:flex md:col-span-1 bg-slate-900 border-r border-slate-800 p-6 flex-col justify-between">
+        <div id="sidebarArea" class="hidden md:flex md:col-span-1 bg-slate-900 border-r border-slate-800 p-6 flex-col justify-between h-full">
             <div class="space-y-6">
                 <div class="border-b border-slate-800 pb-4">
                     <h2 class="text-lg font-black text-slate-200 flex items-center gap-2">📊 캠퍼스 관제 동향</h2>
                     <p class="text-[11px] text-slate-500 mt-0.5">대덕면 내리 대학가 밀집도 분석 리스트</p>
                 </div>
-                
                 <div class="space-y-3">
                     <div class="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex justify-between items-center"><span class="text-xs font-bold text-rose-400">🔴 내리 대학가 원룸촌</span><span class="text-[10px] bg-rose-500 text-white px-2 py-0.5 rounded font-black">🛠️ 고위험</span></div>
                     <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex justify-between items-center"><span class="text-xs font-bold text-amber-400">🟡 중앙대 정문 광장</span><span class="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-black">⚠️ 주시</span></div>
@@ -49,28 +48,39 @@
             <div class="pt-4 border-t border-slate-800 text-center"><p class="text-[10px] text-slate-600 font-mono tracking-widest">CAU DAVINCI CAMPUS CONTROL</p></div>
         </div>
 
-        <div id="mainContentArea" class="col-span-1 md:col-span-3 flex flex-col bg-slate-950">
+        <div id="mainContentArea" class="col-span-1 md:col-span-3 flex flex-col h-full bg-slate-950 overflow-hidden">
             
-            <div class="bg-slate-900 md:bg-slate-950/40 border-b border-slate-800/80 p-4 sticky top-0 z-50 flex justify-between items-center shadow-md md:shadow-none">
-                <div>
-                    <h1 class="text-base md:text-xl font-black text-slate-100 flex items-center gap-1.5">
-                        🛰️ <span id="displayBrandName" class="text-indigo-400"></span> 관제 본부 (안성)
-                    </h1>
-                    <p class="text-[10px] md:text-xs text-slate-400 mt-0.5">중앙대 다빈치캠 전용 규제 정렬 알고리즘 동기화 중</p>
+            <div class="flex flex-col flex-shrink-0 bg-slate-900 md:bg-slate-950/40 border-b border-slate-800/80 z-40">
+                <div class="p-4 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-base md:text-xl font-black text-slate-100 flex items-center gap-1.5">
+                            🛰️ <span id="displayBrandName" class="text-indigo-400"></span> 관제 본부 (안성)
+                        </h1>
+                        <p class="text-[10px] md:text-xs text-slate-400 mt-0.5">중앙대 다빈치캠 전용 규제 정렬 알고리즘 동기화 중</p>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button onclick="loadTasks()" class="bg-slate-800 active:bg-slate-700 px-2.5 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer border border-slate-700/50 transition-all">🔄 갱신</button>
+                        <button onclick="logoutDriver()" class="bg-slate-800 hover:bg-rose-950/30 text-rose-400 px-2.5 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer border border-rose-900/30 transition-all">로그아웃</button>
+                    </div>
                 </div>
-                <div class="flex gap-1.5">
-                    <button onclick="loadTasks()" class="bg-slate-800 active:bg-slate-700 px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer border border-slate-700/50 transition-all">🔄 갱신</button>
-                    <button onclick="logoutDriver()" class="bg-slate-800 hover:bg-rose-950/30 text-rose-400 px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer border border-rose-900/30 transition-all">로그아웃</button>
+
+                <div class="grid grid-cols-2 text-xs font-bold text-center md:hidden border-t border-slate-800/40">
+                    <button onclick="switchTab('tasks')" id="tabTasksBtn" class="py-3 border-b-2 border-indigo-500 text-indigo-400 transition-all cursor-pointer">📋 실시간 배정 기기</button>
+                    <button onclick="switchTab('regions')" id="tabRegionsBtn" class="py-3 border-b-2 border-transparent text-slate-500 transition-all cursor-pointer">📊 구역별 위험 동향</button>
                 </div>
             </div>
-
-            <div class="grid grid-cols-2 bg-slate-900 border-b border-slate-800/60 text-xs font-bold text-center sticky top-[57px] z-40 md:hidden">
-                <button onclick="switchTab('tasks')" id="tabTasksBtn" class="py-3 border-b-2 border-indigo-500 text-indigo-400 transition-all cursor-pointer">📋 실시간 배정 기기</button>
-                <button onclick="switchTab('regions')" id="tabRegionsBtn" class="py-3 border-b-2 border-transparent text-slate-500 transition-all cursor-pointer">📊 구역별 위험 동향</button>
-            </div>
-
-            <div class="p-4 md:p-6 overflow-y-auto space-y-4">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-20">
                 <div id="taskContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+                
+                <div id="mobileRegionsContainer" class="hidden space-y-2 mt-1">
+                    <div class="text-center py-1 border-b border-dashed border-slate-800 mb-3">
+                        <p class="text-[11px] text-slate-500">인공지능이 분석한 실시간 핫스팟 현황</p>
+                    </div>
+                    <div class="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex justify-between items-center"><span class="text-xs font-bold text-rose-400">🔴 내리 대학가 원룸촌</span><span class="text-[10px] bg-rose-500 text-white px-2 py-0.5 rounded font-black">🛠️ 고위험 밀집</span></div>
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex justify-between items-center"><span class="text-xs font-bold text-amber-400">🟡 중앙대 정문 광장</span><span class="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-black">⚠️ 주시 등급</span></div>
+                    <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center"><span class="text-xs font-bold text-slate-500">⚪ 대덕면 행정센터</span><span class="text-[10px] bg-slate-800 text-slate-500 px-2 py-0.5 rounded font-bold">안전</span></div>
+                    <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center"><span class="text-xs font-bold text-slate-500">⚪ 신령리 / 건지리 일대</span><span class="text-[10px] bg-slate-800 text-slate-500 px-2 py-0.5 rounded font-bold">안전</span></div>
+                </div>
             </div>
 
         </div>
@@ -80,23 +90,23 @@
         let currentLoggedBrand = "";
         let isMobile = false;
 
-        // 브라우저 화면 크기를 체크하는 센서 함수
         function checkDeviceWidth() {
-            isMobile = window.innerWidth < 768; // md 규격(768px)보다 작으면 모바일로 판단
+            isMobile = window.innerWidth < 768;
             const sidebar = document.getElementById('sidebarArea');
-            const tabTasksBtn = document.getElementById('tabTasksBtn').parentNode;
+            const taskContainer = document.getElementById('taskContainer');
+            const mobileRegions = document.getElementById('mobileRegionsContainer');
 
             if (!isMobile && currentLoggedBrand) {
-                // PC 화면 모드 진입 시: 사이드바 강제 오픈, 모바일용 탭 요소 숨김 처리
-                sidebar.className = "md:flex md:col-span-1 bg-slate-900 border-r border-slate-800 p-6 flex flex-col justify-between";
-                document.getElementById('taskContainer').style.display = 'grid';
+                sidebar.className = "md:flex md:col-span-1 bg-slate-900 border-r border-slate-800 p-6 flex flex-col justify-between h-full";
+                taskContainer.style.display = 'grid';
+                mobileRegions.style.display = 'none';
             }
         }
         window.addEventListener('resize', checkDeviceWidth);
 
         function loginDriver() {
             currentLoggedBrand = document.getElementById('driverBrand').value;
-            document.body.className = "bg-slate-950 min-h-screen text-slate-100"; 
+            document.body.className = "bg-slate-950 min-h-screen text-slate-100 overflow-hidden"; // 전체 바디 스크롤 차단
             document.getElementById('loginSection').className = "hidden";
             document.getElementById('dashboardSection').classList.remove('hidden');
             document.getElementById('displayBrandName').innerText = currentLoggedBrand;
@@ -111,26 +121,24 @@
             clearInterval(window.taskInterval);
             document.body.className = "bg-slate-950 min-h-screen text-slate-100 flex items-center justify-center";
             document.getElementById('dashboardSection').classList.add('hidden');
-            document.getElementById('loginSection').className = "w-full max-w-sm mx-auto bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl block m-4";
+            document.getElementById('loginSection').className = "w-full max-w-sm mx-auto bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl block m-4 z-50";
         }
 
-        // 모바일 전용 탭 제어 로직 (PC 모드일 때는 사이드바 인터랙션과 스위칭 연동)
         function switchTab(tab) {
             if (!isMobile) return;
-            const sidebar = document.getElementById('sidebarArea');
             const taskContainer = document.getElementById('taskContainer');
+            const mobileRegions = document.getElementById('mobileRegionsContainer');
             const tasksBtn = document.getElementById('tabTasksBtn');
             const regionsBtn = document.getElementById('tabRegionsBtn');
 
             if (tab === 'tasks') {
-                sidebar.className = "hidden"; // 모바일 가젯 숨김
-                taskContainer.style.display = 'grid'; // 목록 오픈
+                mobileRegions.style.display = 'none';
+                taskContainer.style.display = 'grid';
                 tasksBtn.className = "py-3 border-b-2 border-indigo-500 text-indigo-400 transition-all cursor-pointer";
                 regionsBtn.className = "py-3 border-b-2 border-transparent text-slate-500 transition-all cursor-pointer";
             } else {
-                // 구역 동향 탭을 누르면 기존 PC용 사이드바 컴포넌트를 모바일 화면에 꽉 차게 재배치하여 렌더링
-                sidebar.className = "block w-full bg-slate-950 p-2 space-y-4"; 
-                taskContainer.style.display = 'none'; // 목록 숨김
+                taskContainer.style.display = 'none';
+                mobileRegions.style.display = 'block';
                 regionsBtn.className = "py-3 border-b-2 border-indigo-500 text-indigo-400 transition-all cursor-pointer";
                 tasksBtn.className = "py-3 border-b-2 border-transparent text-slate-500 transition-all cursor-pointer";
             }
